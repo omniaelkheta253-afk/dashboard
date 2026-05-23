@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNSEEN | Atelier Dashboard</title>
+    <!-- Tailwind CSS for modern premium styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for beautiful interactive analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Cinzel for brand elegance, Inter for clear readability -->
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-bg': '#FAF8F5',       /* Luxurious soft warm off-white */
+                        'brand-sidebar': '#EFECE6',  /* Rich warm beige for side panel */
+                        'brand-card': '#FFFFFF',     /* Pure white card backgrounds */
+                        'brand-text-dark': '#302924',/* Luxury deep charcoal brown */
+                        'brand-text-muted': '#72675F',/* Muted earth brown */
+                        'brand-accent': '#A39282',    /* Soft gold/champagne bronze */
+                        'brand-accent-dark': '#5F544A',/* Deep elegant bronze */
+                    },
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAF8F5; color: #302924; }
+        .brand-logo { font-family: 'Cinzel', serif; letter-spacing: 6px; }
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(48, 41, 36, 0.05); }
+        .interactive-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px -5px rgba(48, 41, 36, 0.08); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #FAF8F5; }
+        ::-webkit-scrollbar-thumb { background: #A39282; border-radius: 4px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Auth Interface Overlay (Login / Register Setup) -->
+    <div id="auth-overlay" class="fixed inset-0 bg-brand-bg z-50 flex items-center justify-center p-4">
+        <div class="bg-white p-8 md:p-12 rounded-2xl border border-[#EBE6DD] card-shadow w-full max-w-md text-center space-y-6">
+            <div>
+                <h1 class="brand-logo text-4xl font-bold text-brand-text-dark">UNSEEN</h1>
+                <span id="auth-subtitle" class="text-[10px] tracking-[5px] text-brand-accent-dark font-medium uppercase mt-2 block">limited pieces</span>
+            </div>
+
+            <!-- Login View -->
+            <div id="login-view" class="space-y-4">
+                <p class="text-xs text-brand-text-muted">Enter your Atelier credentials to unlock the management systems.</p>
+                <form onsubmit="handleLogin(event)" class="space-y-3 text-left">
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Username</label>
+                        <input type="text" id="login-username" required class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Password</label>
+                        <div class="relative">
+                            <input type="password" id="login-password" required class="w-full p-2.5 pr-10 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', 'login-pass-icon')" class="absolute inset-y-0 right-3 flex items-center text-brand-text-muted hover:text-brand-text-dark">
+                                <i id="login-pass-icon" class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-brand-accent-dark hover:bg-brand-text-dark text-white py-3 rounded-xl transition font-semibold text-sm mt-2">
+                        Access Atelier
+                    </button>
+                </form>
+                <div class="pt-2">
+                    <button onclick="toggleAuthMode(true)" class="text-xs text-brand-accent hover:text-brand-accent-dark font-semibold underline">No account? Create Atelier Key</button>
+                </div>
+            </div>
+
+            <!-- Register View -->
+            <div id="register-view" class="space-y-4 hidden">
+                <p class="text-xs text-brand-text-muted">Register owner credentials to establish secure cloud database encryption.</p>
+                <form onsubmit="handleRegister(event)" class="space-y-3 text-left">
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Set Master Username</label>
+                        <input type="text" id="reg-username" required placeholder="e.g. unseen_atelier" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Set Master Password</label>
+                        <div class="relative">
+                            <input type="password" id="reg-password" required placeholder="••••••••" class="w-full p-2.5 pr-10 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                            <button type="button" onclick="togglePasswordVisibility('reg-password', 'reg-pass-icon')" class="absolute inset-y-0 right-3 flex items-center text-brand-text-muted hover:text-brand-text-dark">
+                                <i id="reg-pass-icon" class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full bg-brand-accent text-white py-3 rounded-xl hover:bg-brand-accent-dark transition font-semibold text-sm mt-2">
+                        Generate Atelier Credentials
+                    </button>
+                </form>
+                <div class="pt-2">
+                    <button onclick="toggleAuthMode(false)" class="text-xs text-brand-accent hover:text-brand-accent-dark font-semibold underline">Back to Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar Panel -->
+    <aside class="w-64 bg-brand-sidebar shadow-sm flex flex-col justify-between hidden md:flex z-10 shrink-0 border-r border-[#E5DFD5]">
+        <div>
+            <!-- Luxury Branding Title -->
+            <div class="h-24 flex flex-col items-center justify-center border-b border-[#DCD5CB]">
+                <h1 class="brand-logo text-3xl font-bold text-brand-text-dark">UNSEEN</h1>
+                <span class="text-[9px] tracking-[4px] text-brand-accent-dark font-medium uppercase mt-1">limited pieces</span>
+            </div>
+            
+            <!-- Sidebar Navigation Links -->
+            <nav class="p-4 space-y-2">
+                <!-- Dashboard Tab -->
+                <button id="btn-tab-dashboard" onclick="switchTab('dashboard')" class="w-full flex items-center space-x-3 bg-white bg-opacity-80 text-brand-text-dark p-3 rounded-xl font-semibold transition-all text-left">
+                    <i class="fas fa-chart-line w-5 text-brand-accent"></i>
+                    <span>Dashboard Stats</span>
+                </button>
+                
+                <!-- Products Information Tab -->
+                <button id="btn-tab-products" onclick="switchTab('products')" class="w-full flex items-center space-x-3 text-brand-text-dark hover:bg-white hover:bg-opacity-40 p-3 rounded-xl transition-all text-left font-medium">
+                    <i class="fas fa-tshirt w-5 text-brand-accent"></i>
+                    <span>Products Information</span>
+                </button>
+
+                <!-- New Orders Tab -->
+                <button id="btn-tab-orders" onclick="switchTab('orders')" class="w-full flex items-center space-x-3 text-brand-text-dark hover:bg-white hover:bg-opacity-40 p-3 rounded-xl transition-all text-left font-medium">
+                    <i class="fas fa-shopping-cart w-5 text-brand-accent"></i>
+                    <span>Orders</span>
+                </button>
+                
+                <!-- Attributes & Settings Tab -->
+                <button id="btn-tab-settings" onclick="switchTab('settings')" class="w-full flex items-center space-x-3 text-brand-text-dark hover:bg-white hover:bg-opacity-40 p-3 rounded-xl transition-all text-left font-medium">
+                    <i class="fas fa-sliders-h w-5 text-brand-accent"></i>
+                    <span>Attributes & Settings</span>
+                </button>
+
+                <!-- Profile Tab -->
+                <button id="btn-tab-profile" onclick="switchTab('profile')" class="w-full flex items-center space-x-3 text-brand-text-dark hover:bg-white hover:bg-opacity-40 p-3 rounded-xl transition-all text-left font-medium">
+                    <i class="fas fa-user-circle w-5 text-brand-accent"></i>
+                    <span>Profile Settings</span>
+                </button>
+
+                <!-- Shortcut for registering custom customer order -->
+                <button id="btn-sidebar-order" onclick="openOrderModal()" class="w-full flex items-center space-x-3 text-brand-text-dark hover:bg-white hover:bg-opacity-50 p-3 rounded-xl transition-all text-left mt-6 border border-brand-accent border-dashed opacity-50 cursor-not-allowed" disabled title="Design products first">
+                    <i class="fas fa-plus-circle w-5 text-brand-accent"></i>
+                    <span class="text-sm font-semibold">New Client Order</span>
+                </button>
+
+                <!-- Factory Reset Button -->
+                <button onclick="openConfirmModal('reset')" class="w-full flex items-center space-x-3 text-red-700 hover:bg-red-50 p-2.5 rounded-lg transition-all text-left text-xs mt-6 border border-red-100 border-dashed">
+                    <i class="fas fa-undo w-4"></i>
+                    <span>Reset Dashboard Data</span>
+                </button>
+            </nav>
+        </div>
+        
+        <!-- Sidebar Version & Logout Footer -->
+        <div class="p-4 border-t border-[#DCD5CB] space-y-3">
+            <button onclick="logoutAtelier()" class="w-full flex items-center justify-center space-x-2 bg-red-50 text-red-700 hover:bg-red-100 py-2.5 rounded-xl text-xs font-semibold transition border border-red-200">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Log Out</span>
+            </button>
+            <div class="text-[10px] text-center text-brand-text-muted">
+                UNSEEN Management System v2.5
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Work Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+        
+        <!-- Fixed Header Bar -->
+        <header class="h-24 bg-brand-bg flex items-center justify-between px-8 border-b border-[#EBE6DD] shrink-0">
+            <div>
+                <h2 id="page-title" class="text-2xl font-bold text-brand-text-dark">Dashboard Stats</h2>
+                <p id="page-subtitle" class="text-xs text-brand-text-muted mt-0.5">Atelier production metrics & limited edition insights</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="header-order-btn" onclick="openOrderModal()" class="bg-brand-accent-dark text-white px-5 py-2.5 rounded-xl hover:bg-brand-text-dark transition-all duration-300 flex items-center gap-2 card-shadow font-semibold text-sm opacity-50 cursor-not-allowed" disabled>
+                    <i class="fas fa-plus text-xs"></i> New Client Order
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Workspace Panel -->
+        <div class="flex-1 overflow-y-auto p-8 space-y-8">
+            
+            <!-- 1. DASHBOARD TAB VIEW -->
+            <div id="tab-content-dashboard" class="space-y-8">
+                
+                <!-- Sleek Date Filter Selector Bar -->
+                <div class="bg-brand-card p-4 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="bg-[#F6F3EE] p-2 rounded-xl text-brand-accent">
+                            <i class="fas fa-calendar-alt text-md"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-brand-text-dark uppercase tracking-wider block">Time Horizon Filter</span>
+                            <span class="text-[10px] text-brand-text-muted">Analyze metrics within a selected historical duration</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <select id="dashboard-date-filter" onchange="handleDateFilterChange()" class="p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent font-semibold text-brand-text-dark">
+                            <option value="all" selected>All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">Last 7 Days</option>
+                            <option value="month">This Month</option>
+                            <option value="custom">Custom Date Range</option>
+                        </select>
+                        <div id="custom-date-inputs" class="flex items-center gap-2 hidden">
+                            <input type="date" id="filter-start-date" onchange="handleDateFilterChange()" class="p-2 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none text-brand-text-dark">
+                            <span class="text-xs text-brand-text-muted">to</span>
+                            <input type="date" id="filter-end-date" onchange="handleDateFilterChange()" class="p-2 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none text-brand-text-dark">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Four Top Metric Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Net Profits -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-brand-text-muted mb-1 uppercase tracking-wider font-semibold">Total Profits</p>
+                                <h3 id="stat-profits" class="text-2xl font-bold text-brand-text-dark">EGP 0</h3>
+                                <p id="profit-margin-label" class="text-[11px] text-green-700 mt-2 font-medium">
+                                    <i class="fas fa-arrow-up mr-0.5"></i> Margin: +50% markup
+                                </p>
+                            </div>
+                            <div class="bg-[#F6F3EE] p-3 rounded-xl text-brand-accent">
+                                <i class="fas fa-wallet text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gross Revenue -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-brand-text-muted mb-1 uppercase tracking-wider font-semibold">Total Revenue</p>
+                                <h3 id="stat-sales" class="text-2xl font-bold text-brand-text-dark">EGP 0</h3>
+                                <p class="text-[11px] text-brand-accent-dark mt-2 font-medium">Cumulative delivered value</p>
+                            </div>
+                            <div class="bg-[#F6F3EE] p-3 rounded-xl text-brand-accent">
+                                <i class="fas fa-receipt text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Number of Orders -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD]">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs text-brand-text-muted mb-1 uppercase tracking-wider font-semibold">Orders Logged</p>
+                                <h3 id="stat-orders" class="text-2xl font-bold text-brand-text-dark">0 Orders</h3>
+                                <p class="text-[11px] text-brand-accent-dark mt-2 font-medium">From elite VIP clientele</p>
+                            </div>
+                            <div class="bg-[#F6F3EE] p-3 rounded-xl text-brand-accent">
+                                <i class="fas fa-shopping-bag text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Production Capacity Meter -->
+                    <div id="stat-production-card" class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] transition-all duration-300">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p id="stat-production-title" class="text-xs text-brand-text-muted mb-1 uppercase tracking-wider font-semibold">Weekly Capacity</p>
+                                <h3 id="stat-gap" class="text-2xl font-bold text-green-800">No Orders</h3>
+                                <p id="stat-gap-desc" class="text-[11px] mt-2 font-medium text-green-700">Add client orders to track capacity</p>
+                            </div>
+                            <div id="stat-production-icon-bg" class="bg-green-50 p-3 rounded-xl text-green-700">
+                                <i id="stat-production-icon" class="fas fa-check-circle text-lg"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Atelier Performance Highlights Panel (Best Seller & Top Rated of Selected Period) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Best Seller of Period Card -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="text-[9px] bg-brand-accent bg-opacity-20 text-brand-accent-dark px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Highlight</span>
+                            <h4 class="text-xs text-brand-text-muted uppercase tracking-wider font-bold">Best Seller (Selected Period)</h4>
+                            <h3 id="highlight-bestseller-name" class="text-xl font-bold text-brand-text-dark brand-logo">No Sales Yet</h3>
+                            <p id="highlight-bestseller-stats" class="text-xs text-brand-text-muted">Register and deliver orders to view metrics</p>
+                        </div>
+                        <div class="bg-[#F6F3EE] p-4 rounded-full text-brand-accent shrink-0">
+                            <i class="fas fa-crown text-2xl"></i>
+                        </div>
+                    </div>
+
+                    <!-- Top Rated of Period Card -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex items-center justify-between">
+                        <div class="space-y-1">
+                            <span class="text-[9px] bg-yellow-50 text-yellow-800 border border-yellow-200 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Rating</span>
+                            <h4 class="text-xs text-brand-text-muted uppercase tracking-wider font-bold">Top Rated (Selected Period)</h4>
+                            <div class="flex items-center gap-2">
+                                <h3 id="highlight-toprated-name" class="text-xl font-bold text-brand-text-dark brand-logo">No Feedbacks</h3>
+                                <div id="highlight-toprated-stars" class="text-amber-400 text-sm flex gap-0.5"></div>
+                            </div>
+                            <p id="highlight-toprated-stats" class="text-xs text-brand-text-muted">Calculated from dynamic star rankings</p>
+                        </div>
+                        <div class="bg-[#F6F3EE] p-4 rounded-full text-brand-accent shrink-0">
+                            <i class="fas fa-star text-2xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Graphic Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Product Sales Chart -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] relative">
+                        <h3 class="text-md font-bold text-brand-text-dark mb-4">Delivered Pieces Performance</h3>
+                        <div id="piecesChartPlaceholder" class="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center items-center text-xs text-brand-text-muted z-10 hidden">
+                            <i class="fas fa-chart-bar text-3xl mb-2 text-brand-accent"></i>
+                            <span>Waiting for delivered orders to visualize...</span>
+                        </div>
+                        <div class="relative h-[250px]">
+                            <canvas id="piecesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Raw Materials Sales Chart -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] relative">
+                        <h3 class="text-md font-bold text-brand-text-dark mb-4">Fabric Demands Share</h3>
+                        <div id="fabricsChartPlaceholder" class="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center items-center text-xs text-brand-text-muted z-10 hidden">
+                            <i class="fas fa-chart-pie text-3xl mb-2 text-brand-accent"></i>
+                            <span>Waiting for delivered metrics...</span>
+                        </div>
+                        <div class="relative h-[250px] flex justify-center">
+                            <canvas id="fabricsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sizes Analysis and Live Table Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Size Demands -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] lg:col-span-1 relative">
+                        <h3 class="text-md font-bold text-brand-text-dark mb-4">Size Distribution</h3>
+                        <div id="sizesChartPlaceholder" class="absolute inset-0 bg-white bg-opacity-95 flex flex-col justify-center items-center text-xs text-brand-text-muted z-10 hidden">
+                            <i class="fas fa-circle-notch text-3xl mb-2 text-brand-accent"></i>
+                            <span>Waiting for delivered size details...</span>
+                        </div>
+                        <div class="relative h-[250px] flex justify-center">
+                            <canvas id="sizesChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Live Active Order Table -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] lg:col-span-2 flex flex-col">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-md font-bold text-brand-text-dark">Active Client Orders Log (Pending Delivery)</h3>
+                            <span class="text-[10px] bg-brand-accent bg-opacity-15 text-brand-accent-dark px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">Queue</span>
+                        </div>
+                        <div class="overflow-x-auto flex-1 max-h-[250px] overflow-y-auto">
+                            <table class="w-full text-xs text-left">
+                                <thead class="bg-[#F6F3EE] text-brand-text-dark sticky top-0 z-10 font-bold uppercase tracking-wider">
+                                    <tr>
+                                        <th class="p-3">Client</th>
+                                        <th class="p-3">Model</th>
+                                        <th class="p-3">Fabric</th>
+                                        <th class="p-3">Specs Selected</th>
+                                        <th class="p-3 text-right">Selling Price</th>
+                                        <th class="p-3 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboard-orders-table-body" class="divide-y divide-[#EBE6DD]">
+                                    <!-- Populated programmatically in JS -->
+                                </tbody>
+                            </table>
+                            <div id="dashboard-orders-empty-state" class="py-12 flex flex-col items-center justify-center text-center text-brand-text-muted border-2 border-dashed border-[#EBE6DD] rounded-xl mt-2">
+                                <i class="fas fa-folder-open text-3xl mb-2 text-brand-accent"></i>
+                                <span class="font-medium text-xs">No active pending orders. Add custom sales under the Products tab!</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. PRODUCTS INFORMATION VIEW -->
+            <div id="tab-content-products" class="hidden space-y-8">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    
+                    <!-- Left: Add New Limited Edition Product Form with Dynamic Multi Image Upload -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] xl:col-span-1 h-fit">
+                        <h3 class="text-lg font-bold text-brand-text-dark mb-2 flex items-center gap-2">
+                            <i class="fas fa-plus-circle text-brand-accent"></i> Design New Piece
+                        </h3>
+                        <p class="text-xs text-brand-text-muted mb-6">Assemble a new model with per-variant stock, costs, and custom attributes.</p>
+                        
+                        <form id="productForm" onsubmit="handleProductSubmit(event)" class="space-y-4">
+                            <!-- Product Model -->
+                            <div>
+                                <label class="block text-xs font-bold text-brand-text-muted uppercase tracking-wider mb-1">Product Model *</label>
+                                <input type="text" id="prodName" required placeholder="e.g. Royal Silk Caftan" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                            </div>
+
+                            <!-- Repeatable model items (Material, Color, Size per item) -->
+                            <div class="border-t border-[#EBE6DD] pt-4 space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <label class="block text-xs font-bold text-brand-text-muted uppercase tracking-wider">Model Items *</label>
+                                    <button type="button" onclick="addProductItemRow()" class="text-xs font-semibold text-brand-accent-dark hover:text-brand-text-dark flex items-center gap-1 transition">
+                                        <i class="fas fa-plus-circle"></i> Add Item
+                                    </button>
+                                </div>
+                                <p class="text-[9px] text-brand-text-muted">Each item is a unique material, color, and size variant with its own available quantity.</p>
+                                <div id="prodItemsContainer" class="space-y-3">
+                                    <!-- Dynamic item rows -->
+                                </div>
+                            </div>
+
+                            <!-- Cost Management -->
+                            <div class="border-t border-[#EBE6DD] pt-4 space-y-3 bg-[#FAF8F5] p-3.5 rounded-xl border border-[#EBE6DD]">
+                                <label class="block text-xs font-bold text-brand-text-dark uppercase tracking-wider">Cost Management</label>
+                                <div class="flex flex-wrap gap-2 items-end">
+                                    <div class="flex-1 min-w-[120px]">
+                                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Price (EGP)</label>
+                                        <input type="number" id="prodCostPrice" min="1" placeholder="Production cost" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-white focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                                    </div>
+                                    <div class="flex-1 min-w-[120px]">
+                                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Target Item</label>
+                                        <select id="prodCostItemSelect" onchange="syncCostDropdownToCheckbox()" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-white focus:outline-none focus:ring-1 focus:ring-brand-accent font-semibold text-brand-text-dark">
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                    </div>
+                                    <button type="button" onclick="applyPriceToSelectedProductItems()" class="bg-brand-accent hover:bg-brand-accent-dark text-white px-3 py-2.5 rounded-xl text-xs font-semibold transition shrink-0">
+                                        Apply Price
+                                    </button>
+                                </div>
+                                <div id="prodCostItemChecklist" class="space-y-1.5 max-h-28 overflow-y-auto">
+                                    <!-- Checkbox list per item -->
+                                </div>
+                                <p class="text-[9px] text-brand-text-muted">Select one or more variants (with quantities shown), enter a price, then apply. Each variant can have its own production cost.</p>
+                            </div>
+
+                            <!-- Dynamic Custom Attributes Form Anchoring Container -->
+                            <div id="dynamic-product-fields" class="space-y-4">
+                                <!-- Dynamic custom checkboxes are inserted here on run-time -->
+                            </div>
+
+                            <!-- Multi-Image Upload Field -->
+                            <div>
+                                <label class="block text-xs font-bold text-brand-text-muted uppercase tracking-wider mb-1">Upload Product Images *</label>
+                                <input type="file" id="prodImages" accept="image/*" multiple onchange="compressAndLoadImages(this, 'new')" class="w-full p-2 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                                <p class="text-[9px] text-brand-text-muted mt-1">Select one or more images. The first image will be used as the catalog cover.</p>
+                                <div id="prodImagesPreview" class="flex flex-wrap gap-1.5 mt-2"></div>
+                            </div>
+
+                            <button type="submit" class="w-full bg-brand-accent-dark text-white py-3 rounded-xl hover:bg-brand-text-dark transition font-semibold text-sm card-shadow mt-4">
+                                Save New Model Design
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Right: Configured Product Cards List (Vertical List - Newest to Oldest) -->
+                    <div class="xl:col-span-2 space-y-4">
+                        <div class="flex justify-between items-center border-b border-[#EBE6DD] pb-3">
+                            <div>
+                                <h3 class="text-lg font-bold text-brand-text-dark">Active Limited Items</h3>
+                                <p class="text-xs text-brand-text-muted">Currently active catalog designs in a vertical chronological order.</p>
+                            </div>
+                        </div>
+
+                        <!-- Product List Layout (Vertical stacked row structure with catalog cover photos) -->
+                        <div id="active-products-catalog" class="space-y-4 flex flex-col">
+                            <!-- Populated in JS dynamically -->
+                        </div>
+
+                        <!-- Empty Catalog Placeholder Box -->
+                        <div id="catalog-empty-state" class="py-20 flex flex-col items-center justify-center text-center text-brand-text-muted bg-brand-card rounded-2xl card-shadow border border-[#EBE6DD]">
+                            <i class="fas fa-boxes text-4xl mb-3 text-brand-accent animate-pulse"></i>
+                            <h4 class="font-bold text-brand-text-dark text-md mb-1">Your Atelier is Empty</h4>
+                            <p class="text-xs max-w-sm px-6">There are no items designed yet. Fill in the form on the left to design and add your very first piece!</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. ORDERS LOG SPLIT VIEW (NEW TAB) -->
+            <div id="tab-content-orders" class="hidden space-y-8">
+                <!-- Section 1: Active Orders (Pending Delivery) -->
+                <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col">
+                    <div class="flex justify-between items-center mb-4 border-b border-[#EBE6DD] pb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-brand-text-dark">1. Active Orders (Pending Delivery)</h3>
+                            <p class="text-xs text-brand-text-muted">Active client queue being crafted. Click "Mark as Delivered" to complete transaction.</p>
+                        </div>
+                        <span class="text-xs bg-amber-50 text-amber-800 px-3 py-1 rounded-full font-bold border border-amber-200">Pending Shipment</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-[#F6F3EE] text-brand-text-dark font-bold uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-md">Date Placed</th>
+                                    <th class="p-3">Client</th>
+                                    <th class="p-3">Model Name</th>
+                                    <th class="p-3">Fabric</th>
+                                    <th class="p-3">Specs Selected</th>
+                                    <th class="p-3">Shipping Address</th>
+                                    <th class="p-3 text-right">Selling Price</th>
+                                    <th class="p-3 text-center rounded-r-md">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-active-tbody" class="divide-y divide-[#EBE6DD]">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                        <div id="orders-active-empty" class="py-12 flex flex-col items-center justify-center text-center text-brand-text-muted border-2 border-dashed border-[#EBE6DD] rounded-xl mt-2 hidden">
+                            <i class="fas fa-shipping-fast text-3xl mb-2 text-brand-accent"></i>
+                            <span class="font-medium text-xs">No pending orders. Excellent job, your workshop is fully caught up!</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Completed Orders (Delivered & Paid) with Returns Filter and Feedback Modals -->
+                <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 border-b border-[#EBE6DD] pb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-brand-text-dark">2. Completed Orders (Delivered & Paid)</h3>
+                            <p class="text-xs text-brand-text-muted">Orders successfully shipped. Funds are accounted for in total profits and metrics. Use the filters below to find specific orders to process returns or add feedbacks.</p>
+                        </div>
+                        <span class="text-xs bg-green-50 text-green-800 px-3 py-1 rounded-full font-bold border border-green-200 shrink-0">Succeeded</span>
+                    </div>
+
+                    <!-- Real-time Filter & Search Panel -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#FAF8F5] p-4 rounded-xl border border-[#EBE6DD] mb-4">
+                        <div>
+                            <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Search Customer Name</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-3 flex items-center text-brand-text-muted"><i class="fas fa-search"></i></span>
+                                <input type="text" id="completed-search-name" oninput="renderOrdersSplitLogs()" placeholder="Type client name..." class="w-full p-2.5 pl-9 border border-[#DCD5CB] rounded-xl text-xs bg-white focus:outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Filter by Model Name</label>
+                            <select id="completed-filter-product" onchange="renderOrdersSplitLogs()" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-white focus:outline-none">
+                                <option value="all">-- All Pieces --</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-[#F6F3EE] text-brand-text-dark font-bold uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-md">Delivered Date</th>
+                                    <th class="p-3">Client</th>
+                                    <th class="p-3">Model Name</th>
+                                    <th class="p-3">Fabric</th>
+                                    <th class="p-3">Specs Selected</th>
+                                    <th class="p-3">Shipping Address</th>
+                                    <th class="p-3 text-right">Selling Price</th>
+                                    <th class="p-3 text-center rounded-r-md">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-completed-tbody" class="divide-y divide-[#EBE6DD]">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                        <div id="orders-completed-empty" class="py-12 flex flex-col items-center justify-center text-center text-brand-text-muted border-2 border-dashed border-[#EBE6DD] rounded-xl mt-2 hidden">
+                            <i class="fas fa-receipt text-3xl mb-2 text-brand-accent"></i>
+                            <span class="font-medium text-xs">No delivered orders found matching your search.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Returned & Refunded Orders -->
+                <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col">
+                    <div class="flex justify-between items-center mb-4 border-b border-[#EBE6DD] pb-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-brand-text-dark">3. Returned & Refunded Orders</h3>
+                            <p class="text-xs text-brand-text-muted">Orders returned by clients. Stock is automatically returned, and financial summaries are balanced.</p>
+                        </div>
+                        <span class="text-xs bg-red-50 text-red-800 px-3 py-1 rounded-full font-bold border border-red-200">Returned</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-[#F6F3EE] text-brand-text-dark font-bold uppercase tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-md">Return Date</th>
+                                    <th class="p-3">Client</th>
+                                    <th class="p-3">Model Name</th>
+                                    <th class="p-3">Specs</th>
+                                    <th class="p-3">Logged Reason</th>
+                                    <th class="p-3 text-center">Refund Issued?</th>
+                                    <th class="p-3 text-center">Documentation / Proof</th>
+                                    <th class="p-3 text-center rounded-r-md">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-returned-tbody" class="divide-y divide-[#EBE6DD]">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                        <div id="orders-returned-empty" class="py-12 flex flex-col items-center justify-center text-center text-brand-text-muted border-2 border-dashed border-[#EBE6DD] rounded-xl mt-2 hidden">
+                            <i class="fas fa-undo-alt text-3xl mb-2 text-brand-accent"></i>
+                            <span class="font-medium text-xs">No returned orders registered. Client satisfaction is absolute!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. ATTRIBUTES & GLOBAL CONFIG VIEW -->
+            <div id="tab-content-settings" class="hidden space-y-8">
+                <div class="flex justify-between items-center bg-brand-card p-6 rounded-2xl border border-[#EBE6DD] card-shadow">
+                    <div>
+                        <h3 class="text-lg font-bold text-brand-text-dark">Custom Attributes and Core Parameters</h3>
+                        <p class="text-xs text-brand-text-muted">Manage master options, adjust metrics, or edit and define custom characteristics dynamically</p>
+                    </div>
+                    <!-- Create Dynamic Custom Attribute Button -->
+                    <button onclick="openCustomAttrModal()" class="bg-brand-accent text-white px-5 py-2.5 rounded-xl hover:bg-brand-accent-dark transition-all duration-300 flex items-center gap-2 card-shadow font-semibold text-xs">
+                        <i class="fas fa-folder-plus text-xs"></i> + Create Custom Attribute
+                    </button>
+                </div>
+
+                <!-- Attributes Deck Grid -->
+                <div id="attributes-deck" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    
+                    <!-- Materials Master Controller -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col justify-between h-[360px]">
+                        <div>
+                            <h3 class="text-md font-bold mb-1 text-brand-text-dark flex items-center gap-2">
+                                <i class="fas fa-scroll text-brand-accent"></i> Master Materials
+                            </h3>
+                            <p class="text-xs text-brand-text-muted mb-4">Add, edit, or remove global fabrics.</p>
+                            
+                            <!-- Current List -->
+                            <div id="settings-materials-list" class="space-y-1.5 h-[170px] overflow-y-auto mb-4 pr-1">
+                                <!-- Dynamic JS contents -->
+                            </div>
+                        </div>
+                        
+                        <!-- Mini Input Form -->
+                        <div class="border-t border-[#EBE6DD] pt-4">
+                            <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Add Fabric Material</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="newMaterialInput" placeholder="e.g. Crepe Silk" class="flex-1 p-2 border border-[#DCD5CB] rounded-lg text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                                <button onclick="addNewMaterial()" class="bg-brand-accent hover:bg-brand-text-dark text-white px-3 py-2 rounded-lg transition text-xs font-semibold">Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colors Master Controller -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col justify-between h-[360px]">
+                        <div>
+                            <h3 class="text-md font-bold mb-1 text-brand-text-dark flex items-center gap-2">
+                                <i class="fas fa-palette text-brand-accent"></i> Master Colors
+                            </h3>
+                            <p class="text-xs text-brand-text-muted mb-4">Add, edit, or delete brand colors.</p>
+                            
+                            <!-- Current List -->
+                            <div id="settings-colors-list" class="space-y-1.5 h-[170px] overflow-y-auto mb-4 pr-1">
+                                <!-- Dynamic JS contents -->
+                            </div>
+                        </div>
+                        
+                        <!-- Mini Input Form -->
+                        <div class="border-t border-[#EBE6DD] pt-4">
+                            <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Add Palette Color</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="newColorInput" placeholder="e.g. Desert Sand" class="flex-1 p-2 border border-[#DCD5CB] rounded-lg text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                                <button onclick="addNewColor()" class="bg-brand-accent hover:bg-brand-text-dark text-white px-3 py-2 rounded-lg transition text-xs font-semibold">Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sizes Master Controller -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col justify-between h-[360px]">
+                        <div>
+                            <h3 class="text-md font-bold mb-1 text-brand-text-dark flex items-center gap-2">
+                                <i class="fas fa-tags text-brand-accent"></i> Master Sizes
+                            </h3>
+                            <p class="text-xs text-brand-text-muted mb-4">Configure and edit available size parameters.</p>
+                            
+                            <!-- Current List -->
+                            <div id="settings-sizes-list" class="space-y-1.5 h-[170px] overflow-y-auto mb-4 pr-1">
+                                <!-- Dynamic JS contents -->
+                            </div>
+                        </div>
+                        
+                        <!-- Mini Input Form -->
+                        <div class="border-t border-[#EBE6DD] pt-4">
+                            <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Add Unique Size</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="newSizeInput" placeholder="e.g. S, M, One Size" class="flex-1 p-2 border border-[#DCD5CB] rounded-lg text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                                <button onclick="addNewSize()" class="bg-brand-accent hover:bg-brand-text-dark text-white px-3 py-2 rounded-lg transition text-xs font-semibold">Add</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Global Capacity & Financial Coefficients -->
+                    <div class="bg-brand-card p-6 rounded-2xl card-shadow border border-[#EBE6DD] flex flex-col justify-between h-[360px]">
+                        <div>
+                            <h3 class="text-md font-bold mb-1 text-brand-text-dark flex items-center gap-2">
+                                <i class="fas fa-cog text-brand-accent"></i> Core Metrics
+                            </h3>
+                            <p class="text-xs text-brand-text-muted mb-4">Set business capacities & markups.</p>
+                            
+                            <div class="space-y-3">
+                                <!-- Capacity Input -->
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-brand-text-muted mb-1">Weekly Factory Limit</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="settings-capacity" min="1" class="w-full p-2 border border-[#DCD5CB] rounded-lg bg-brand-bg focus:outline-none text-xs font-bold">
+                                        <span class="text-xs text-brand-text-muted font-bold shrink-0">pieces/week</span>
+                                    </div>
+                                </div>
+
+                                <!-- Markup Percentage -->
+                                <div>
+                                    <label class="block text-[11px] font-semibold text-brand-text-muted mb-1">Profit Markup (%)</label>
+                                    <div class="flex items-center gap-2">
+                                        <input type="number" id="settings-margin" min="0" max="1000" class="w-full p-2 border border-[#DCD5CB] rounded-lg bg-brand-bg focus:outline-none text-xs font-bold">
+                                        <span class="text-xs text-brand-text-muted font-bold shrink-0">%</span>
+                                    </div>
+                                    <p class="text-[9px] text-brand-text-muted mt-1 leading-normal">Formulary: Retail Price = Cost + % Markup.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Update settings button -->
+                        <div class="border-t border-[#EBE6DD] pt-4">
+                            <button onclick="saveGlobalMetrics()" class="w-full bg-brand-accent-dark hover:bg-brand-text-dark text-white py-2.5 rounded-lg transition text-xs font-bold shadow-sm">
+                                Apply Metrics
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 5. PROFILE SETTINGS VIEW -->
+            <div id="tab-content-profile" class="hidden space-y-8">
+                <div class="max-w-xl bg-brand-card p-8 rounded-2xl border border-[#EBE6DD] card-shadow mx-auto space-y-6">
+                    <div class="border-b border-[#EBE6DD] pb-4 text-center">
+                        <i class="fas fa-user-shield text-4xl text-brand-accent mb-2"></i>
+                        <h3 class="text-lg font-bold text-brand-text-dark">Atelier Profile Security</h3>
+                        <p class="text-xs text-brand-text-muted">Modify secure master credentials or log out to lock the analytical workspace</p>
+                    </div>
+
+                    <form onsubmit="handleProfileUpdate(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-brand-text-muted uppercase tracking-wider mb-1">Current Username</label>
+                            <input type="text" id="profile-username" required class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-brand-text-muted uppercase tracking-wider mb-1">New Master Password</label>
+                            <div class="relative">
+                                <input type="password" id="profile-password" placeholder="Leave empty to keep existing password" class="w-full p-2.5 pr-10 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                                <button type="button" onclick="togglePasswordVisibility('profile-password', 'profile-pass-icon')" class="absolute inset-y-0 right-3 flex items-center text-brand-text-muted hover:text-brand-text-dark">
+                                    <i id="profile-pass-icon" class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="pt-2">
+                            <button type="submit" class="w-full bg-brand-accent-dark hover:bg-brand-text-dark text-white py-3 rounded-xl transition font-semibold text-sm">
+                                Save Profile Changes
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="border-t border-[#EBE6DD] pt-6 text-center">
+                        <button onclick="logoutAtelier()" class="inline-flex items-center space-x-2 bg-red-50 text-red-700 hover:bg-red-100 px-6 py-2.5 rounded-xl text-xs font-semibold transition border border-red-200">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out & Lock Workspace</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Order Placement Modal Form -->
+    <div id="orderModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4 transition-all duration-300">
+        <div class="bg-brand-card w-full max-w-lg rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="bg-brand-sidebar p-5 flex justify-between items-center border-b border-[#EBE6DD]">
+                <div>
+                    <h3 class="text-md font-bold text-brand-text-dark uppercase tracking-wider">Log Atelier Sale Order</h3>
+                    <p class="text-[10px] text-brand-text-muted mt-0.5">Register customer details and secure the item allocation</p>
+                </div>
+                <button onclick="closeOrderModal()" class="text-brand-text-dark hover:text-red-700 transition-colors">
+                    <i class="fas fa-times text-md"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Form Body -->
+            <form id="orderForm" onsubmit="handleOrderSubmit(event)" class="p-6 space-y-4">
+                <!-- Client Details Grid with Date -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Customer Name *</label>
+                        <input type="text" id="custName" required placeholder="Jane Doe" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Contact Phone *</label>
+                        <input type="tel" id="custPhone" required placeholder="+20 1..." class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Order Date *</label>
+                        <input type="date" id="custOrderDate" required class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    </div>
+                </div>
+
+                <!-- Product Selector (Dynamic) -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Select Limited Model *</label>
+                    <select id="itemProductSelect" required onchange="adaptOrderFormOptions()" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                        <!-- Filled in JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Colors & Sizes Dropdowns -->
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- Material Display Only -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Material</label>
+                        <input type="text" id="orderProductMaterial" readonly class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-[#F2ECE4] text-brand-text-dark font-medium cursor-not-allowed">
+                    </div>
+                    <!-- Selected Color -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Choose Color *</label>
+                        <select id="orderProductColor" required onchange="onOrderColorChange()" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                            <!-- Filled dynamically in JS -->
+                        </select>
+                    </div>
+                    <!-- Selected Size -->
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Choose Size *</label>
+                        <select id="orderProductSize" required onchange="onOrderVariantChange()" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                            <!-- Filled dynamically in JS -->
+                        </select>
+                    </div>
+                </div>
+
+                <p id="order-stock-hint" class="text-xs font-medium text-brand-text-muted bg-[#FAF8F5] border border-[#EBE6DD] rounded-xl px-3 py-2 hidden"></p>
+
+                <!-- Dynamic Custom Attributes Dropdown Attachment point -->
+                <div id="dynamic-order-fields" class="grid grid-cols-2 gap-4">
+                    <!-- Rendered at runtime if custom attributes exist on the selected product -->
+                </div>
+
+                <!-- Retail Pricing Calculator Preview -->
+                <div class="p-3 bg-green-50 rounded-xl flex justify-between items-center text-green-800 text-xs border border-green-100">
+                    <span id="priceLabel" class="font-medium">Calculated Retail Price:</span>
+                    <span id="priceVal" class="font-bold text-sm">0 EGP</span>
+                </div>
+
+                <!-- Address Input -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Shipping Address *</label>
+                    <input type="text" id="custAddress" required placeholder="Cairo, Maadi..." class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                </div>
+
+                <!-- Bottom Button Bar -->
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeOrderModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" id="orderSubmitBtn" class="px-5 py-2 bg-brand-accent-dark text-white rounded-xl text-xs hover:bg-brand-text-dark font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed">Complete Order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Custom Attribute Creation Modal -->
+    <div id="customAttrModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-md rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden transform scale-95 transition-all duration-300">
+            <div class="bg-brand-sidebar p-5 flex justify-between items-center border-b border-[#EBE6DD]">
+                <div>
+                    <h3 class="text-sm font-bold text-brand-text-dark uppercase tracking-wider">Create Custom Metric</h3>
+                    <p class="text-[10px] text-brand-text-muted mt-0.5">Design a completely custom parameter for items</p>
+                </div>
+                <button onclick="closeCustomAttrModal()" class="text-brand-text-dark hover:text-red-700 transition">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Metric Name *</label>
+                    <input type="text" id="newMetricName" placeholder="e.g., Neckline, Sleeve Type, Pattern" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Options / Components (Comma Separated) *</label>
+                    <input type="text" id="newMetricOptions" placeholder="e.g., Short sleeve, Long sleeve, Sleeveless" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    <p class="text-[9px] text-brand-text-muted mt-1">Provide options separated by a comma. They will instantly populate your item designer form.</p>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button onclick="closeCustomAttrModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                    <button onclick="saveNewCustomAttribute()" class="px-4 py-2 bg-brand-accent text-white rounded-xl text-xs hover:bg-brand-text-dark font-semibold transition">Create Metric</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attribute Edit Modal -->
+    <div id="editAttributeModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-sm rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden p-6 space-y-4">
+            <h3 class="text-sm font-bold text-brand-text-dark uppercase tracking-wider" id="editAttrTitle">Edit Parameter</h3>
+            <div>
+                <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">New Value Name *</label>
+                <input type="text" id="editAttrInput" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent">
+            </div>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeEditAttributeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                <button id="editAttrSaveBtn" class="px-5 py-2 bg-brand-accent text-white rounded-xl text-xs font-semibold hover:bg-brand-text-dark transition">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Reason Capture Modal -->
+    <div id="returnModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-md rounded-2xl shadow-2xl border border-[#EBE6DD] p-6 space-y-4 transform scale-95 transition-transform duration-300">
+            <h3 class="text-md font-bold text-brand-text-dark uppercase tracking-wider"><i class="fas fa-undo mr-1 text-red-500"></i> Log Product Return</h3>
+            <p class="text-xs text-brand-text-muted">Deducts sales metrics, returns piece to stock inventory, and queues item in the refund workspace.</p>
+            <div>
+                <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Reason for Return *</label>
+                <textarea id="returnReasonText" rows="3" required placeholder="e.g., Size did not fit, decided to swap colors..." class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent"></textarea>
+            </div>
+            <input type="hidden" id="returnOrderId">
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeReturnModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                <button onclick="submitReturnOrder()" class="px-5 py-2 bg-red-600 text-white rounded-xl text-xs font-semibold hover:bg-red-700 transition">Process Return</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Capture Modal -->
+    <div id="feedbackModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-md rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden transform scale-95 transition-transform duration-300">
+            <div class="bg-brand-sidebar p-5 flex justify-between items-center border-b border-[#EBE6DD]">
+                <div>
+                    <h3 class="text-md font-bold text-brand-text-dark uppercase tracking-wider">Log Customer Feedback</h3>
+                    <p class="text-[10px] text-brand-text-muted mt-0.5">Record customer reviews & star ratings for this piece</p>
+                </div>
+                <button onclick="closeFeedbackModal()" class="text-brand-text-dark hover:text-red-700 transition">
+                    <i class="fas fa-times text-md"></i>
+                </button>
+            </div>
+            <form id="feedbackForm" onsubmit="handleFeedbackSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="feedbackOrderId">
+                
+                <!-- Star Rating selector -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-2">Item Rating (out of 5) *</label>
+                    <div id="star-rating-selector" class="flex items-center gap-2 text-2xl text-amber-400">
+                        <i class="far fa-star cursor-pointer star-btn" data-val="1" onclick="setStarRating(1)"></i>
+                        <i class="far fa-star cursor-pointer star-btn" data-val="2" onclick="setStarRating(2)"></i>
+                        <i class="far fa-star cursor-pointer star-btn" data-val="3" onclick="setStarRating(3)"></i>
+                        <i class="far fa-star cursor-pointer star-btn" data-val="4" onclick="setStarRating(4)"></i>
+                        <i class="far fa-star cursor-pointer star-btn" data-val="5" onclick="setStarRating(5)"></i>
+                    </div>
+                    <input type="hidden" id="feedbackRatingValue" required value="0">
+                </div>
+
+                <!-- Feedback Message -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Feedback Message *</label>
+                    <textarea id="feedbackMessage" rows="3" required placeholder="How did the client feel about this piece? e.g. Absolutely loved the silk drape!" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none focus:ring-1 focus:ring-brand-accent"></textarea>
+                </div>
+
+                <!-- Proof image upload (WhatsApp / Instapay Screenshot) -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Upload Feedback Screenshot (Proof)</label>
+                    <input type="file" id="feedbackImageInput" accept="image/*" onchange="compressAndLoadFeedbackImage(this)" class="w-full p-2 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none">
+                    <div id="feedbackImagePreviewContainer" class="mt-2 hidden">
+                        <img id="feedbackImagePreview" class="w-16 h-16 object-cover rounded-xl border border-brand-accent">
+                    </div>
+                </div>
+
+                <!-- Bottom Bar -->
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeFeedbackModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-accent-dark text-white rounded-xl text-xs hover:bg-brand-text-dark font-semibold transition">Save Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Refund Screenshot / Proof Lightbox Modal -->
+    <div id="proofModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50 p-4">
+        <div class="relative bg-white p-2 rounded-2xl max-w-sm w-full card-shadow">
+            <button onclick="closeProofModal()" class="absolute -top-10 right-0 text-white text-sm bg-brand-text-dark bg-opacity-60 px-3 py-1.5 rounded-xl hover:bg-brand-text-dark transition">
+                <i class="fas fa-times mr-1"></i> Close Proof
+            </button>
+            <img id="proofModalImage" src="" class="w-full h-auto rounded-xl object-contain max-h-[80vh]">
+        </div>
+    </div>
+
+    <!-- Product Details Presentation Popup (Modal) -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-lg rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden transform scale-95 transition-all duration-300">
+            <div class="bg-brand-sidebar p-5 flex justify-between items-center border-b border-[#EBE6DD]">
+                <div>
+                    <span class="text-[9px] tracking-[3px] text-brand-accent-dark font-bold uppercase block mb-1">ATELIER ARCHIVE</span>
+                    <h3 id="detailModalName" class="text-lg font-bold text-brand-text-dark brand-logo">Item Specifications</h3>
+                </div>
+                <button onclick="closeProductDetailModal()" class="text-brand-text-dark hover:text-red-700 transition">
+                    <i class="fas fa-times text-md"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                
+                <!-- Multi-image gallery carousel viewer -->
+                <div>
+                    <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider">Atelier Gallery</span>
+                    <div id="detailModalGallery" class="flex gap-2 overflow-x-auto py-2">
+                        <!-- Dynamic images listed here -->
+                    </div>
+                </div>
+
+                <!-- Details grid info -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-brand-bg p-3.5 rounded-xl border border-[#EBE6DD]">
+                        <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider">FABRIC COMPOSITION</span>
+                        <p id="detailModalFabric" class="text-xs font-bold text-brand-text-dark mt-1">-</p>
+                    </div>
+                    <div class="bg-brand-bg p-3.5 rounded-xl border border-[#EBE6DD]">
+                        <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider">CURRENT WAREHOUSE STOCK</span>
+                        <p id="detailModalStock" class="text-xs font-bold mt-1">-</p>
+                    </div>
+                </div>
+
+                <!-- Colors swatches display -->
+                <div>
+                    <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider">AVAILABLE ATELIER COLORS</span>
+                    <div id="detailModalColors" class="flex flex-wrap gap-1.5 mt-1.5">
+                        <!-- Dynamic values -->
+                    </div>
+                </div>
+
+                <!-- Sizes tags display -->
+                <div>
+                    <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider">AVAILABLE SIZES</span>
+                    <div id="detailModalSizes" class="flex flex-wrap gap-1.5 mt-1.5">
+                        <!-- Dynamic values -->
+                    </div>
+                </div>
+
+                <!-- Custom specifications attributes list -->
+                <div id="detailModalCustomAttrs" class="space-y-3 bg-[#FAF8F5] p-4 rounded-xl border border-[#EBE6DD]">
+                    <span class="text-[9px] text-brand-text-muted uppercase font-bold tracking-wider block mb-2">DYNAMIC CUSTOM ATTRIBUTES</span>
+                    <!-- Dynamic fields -->
+                </div>
+
+                <!-- Pricing metrics details -->
+                <div class="border-t border-[#EBE6DD] pt-4 grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
+                        <span class="text-[9px] text-brand-text-muted uppercase font-bold">PRODUCTION COST</span>
+                        <p id="detailModalCost" class="text-xs font-bold text-brand-text-dark mt-0.5">-</p>
+                    </div>
+                    <div class="bg-stone-50 p-2.5 rounded-lg border border-stone-200">
+                        <span class="text-[9px] text-brand-text-muted uppercase font-bold">PROFIT MARKUP</span>
+                        <p id="detailModalMarkup" class="text-xs font-bold text-brand-accent-dark mt-0.5">-</p>
+                    </div>
+                    <div class="bg-green-50 p-2.5 rounded-lg border border-green-100">
+                        <span class="text-[9px] text-green-700 uppercase font-bold">RETAIL PRICE</span>
+                        <p id="detailModalRetail" class="text-xs font-bold text-green-800 mt-0.5">-</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Bottom modal action triggers -->
+            <div class="bg-[#FAF8F5] px-6 py-4 flex justify-between border-t border-[#EBE6DD]">
+                <button id="detailModalDeleteBtn" class="text-xs text-red-500 hover:text-red-700 font-semibold transition">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete Piece
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="closeProductDetailModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Close</button>
+                    <button id="detailModalEditBtn" class="px-4 py-2 bg-brand-accent text-white rounded-xl text-xs hover:bg-brand-accent-dark font-semibold transition">
+                        <i class="fas fa-edit mr-1"></i> Edit Design
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Editing Modal Form -->
+    <div id="editProductModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-lg rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="bg-brand-sidebar p-5 flex justify-between items-center border-b border-[#EBE6DD]">
+                <div>
+                    <h3 class="text-md font-bold text-brand-text-dark uppercase tracking-wider">Edit Product Design</h3>
+                    <p class="text-[10px] text-brand-text-muted mt-0.5">Adjust name, stocks, available specs and cost of the selected model</p>
+                </div>
+                <button onclick="closeEditProductModal()" class="text-brand-text-dark hover:text-red-700 transition">
+                    <i class="fas fa-times text-md"></i>
+                </button>
+            </div>
+            
+            <!-- Modal Body Form -->
+            <form id="editProductForm" onsubmit="handleProductUpdateSubmit(event)" class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <input type="hidden" id="editProdIndex">
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Model Name *</label>
+                    <input type="text" id="editProdName" required class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Material (Fabric) *</label>
+                    <select id="editProdMaterial" required class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                        <!-- Populated dynamic -->
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1.5">Available Colors *</label>
+                    <div id="editProdColorsContainer" class="grid grid-cols-2 gap-2 max-h-24 overflow-y-auto p-2.5 bg-brand-bg border border-[#DCD5CB] rounded-xl">
+                        <!-- Filled in JS -->
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1.5">Available Sizes *</label>
+                    <div id="editProdSizesContainer" class="flex flex-wrap gap-2.5 p-2.5 bg-brand-bg border border-[#DCD5CB] rounded-xl">
+                        <!-- Filled in JS -->
+                    </div>
+                </div>
+
+                <div id="edit-dynamic-product-fields" class="space-y-4">
+                    <!-- Dynamic custom attributes list -->
+                </div>
+
+                <!-- Edit Multi-Image Upload Field -->
+                <div>
+                    <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Update Product Images</label>
+                    <input type="file" id="editProdImages" accept="image/*" multiple onchange="compressAndLoadImages(this, 'edit')" class="w-full p-2 border border-[#DCD5CB] rounded-xl text-xs bg-brand-bg focus:outline-none">
+                    <p class="text-[9px] text-brand-text-muted mt-1">Leaves empty to retain existing catalog covers.</p>
+                    <div id="editProdImagesPreview" class="flex flex-wrap gap-1.5 mt-2"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Production Cost *</label>
+                        <input type="number" id="editProdCost" required min="1" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Stock Quantity *</label>
+                        <input type="number" id="editProdStock" required min="1" class="w-full p-2.5 border border-[#DCD5CB] rounded-xl text-sm bg-brand-bg focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeEditProductModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-brand-accent-dark text-white rounded-xl text-xs font-semibold hover:bg-brand-text-dark transition">Save Product Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Safe Action Modal for deletion confirmations -->
+    <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50 p-4">
+        <div class="bg-brand-card w-full max-w-sm rounded-2xl shadow-2xl border border-[#EBE6DD] overflow-hidden p-6 text-center space-y-4">
+            <div class="text-red-500 text-3xl">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-md font-bold text-brand-text-dark uppercase tracking-wider" id="confirmTitle">System Action Confirm</h3>
+            <p class="text-xs text-brand-text-muted" id="confirmMessage">Are you sure you want to perform this action? This operation cannot be undone.</p>
+            <div class="flex justify-center space-x-3 pt-2">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl text-xs hover:bg-gray-300 transition">Cancel</button>
+                <button id="confirmBtnAction" class="px-5 py-2 bg-red-600 text-white rounded-xl text-xs hover:bg-red-700 font-semibold transition">Reset Now</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Toast Alerts -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-brand-text-dark text-white px-6 py-3.5 rounded-xl shadow-2xl hidden z-50 flex items-center gap-3 border border-brand-accent transition-all duration-300">
+        <i class="fas fa-check-circle text-[#D4C3B3] text-lg"></i>
+        <span id="toast-text" class="text-xs font-semibold">Changes applied successfully!</span>
+    </div>
+
+    <!-- Firebase Imports and Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Expose Firebase API to main script
+        window.F_API = {
+            initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged,
+            getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs
+        };
+
+        // Bootstrap the connected backend
+        initConnectedDatabase();
+    </script>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
